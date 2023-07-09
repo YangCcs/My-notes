@@ -26,6 +26,32 @@ STL共有六大部件：Containers（容器）、Iterators（迭代器）、Algo
 
 手撕代码题：
 1.问到线程间通信时说了信号量，用pv操作来实现同步和互斥的关系：盘子里有最多可以装两个水果，苹果和橘子，爸爸每次往盘子里放一个苹果，妈妈每次往盘子里放一个橘子，儿子每次从盘子里拿一个苹果，女儿每次从盘子里拿一个橘子，请用信号量实现同步和互斥：
+```C++
+#include <pthread.h>
+#include <semaphore>
+// mutex1是苹果互斥锁，mutex2是橘子互斥锁
+mutex_t mutex1, mutex2;
+// sem1是苹果信号量，sem2是橘子信号量
+sem_t sem1, sem2;
+pthread_mutex_init(mutex1, NULL);
+pthread_mutex_init(mutex2);
+sem_init(sem1);
+sem_init(sem2);
+void father() {
+    pthread_mutex_lock(mutex1, NULL);
+    sem_post(sem1);
+    pthread_mutex_unlock(mutex1, NULL);
+void son() {
+    pthread_mutex_lock(mutex2, NULL);
+    sem_wait(sem1);
+    pthread_mutex_unlock(mutex2, NULL);
+}
+
+pthread_mutex_destroy(mutex1);
+pthread_mutex_destroy(mutex2);
+sem_destroy(sem1);
+sem_destroy(sem2);
+```
 
 2.二叉树前序遍历非递归（用栈呗）
 
@@ -46,10 +72,81 @@ STL共有六大部件：Containers（容器）、Iterators（迭代器）、Algo
 4.手撕LRU（很幸运上午十一点多在教研室刚手撕了这个题，惊喜，不然肯定不会做），撕了挺长时间的
 ```C++
 struct DListNode {
-    int val;
+    int key, value;
     DListNode* pre;
     DListNode* next;
+    DListNode():key(0), value(0), pre(nullptr), next(nullptr) {}
+    DListNode(int _key, int _value):key(_key), value(_value), pre(nullptr), next(nullptr) {}
 };
+
+class LRUCache {
+public:
+    LRUCache(int capacity) {
+        this->capacity = capacity;
+        this->size = 0;
+        head = new DListNode();
+        tail = new DListNode();
+        head->next = tail;
+        tail->pre = head;
+    }
+    ~LRUCache() {
+        delete head;
+        delete tail;
+    }
+    int get(int key) {
+        if (cache.count(key) == 0) {
+            return -1;
+        }
+        DListNode* tmp = cache[key];
+        remove(tmp);
+        addToHead(tmp);
+        return tmp->value;
+    }
+    void put(int key, int value) {
+        if (cache.count(key) == 0) {
+            if (size >= capacity) {
+                DListNode* real_tail = removeTail(); // 直接删就行
+                DListNode* real_head = new DListNode(key, value);
+                addToHead(real_head);
+            } else {
+                DListNode* real_head = new DlistNode(key, value);
+                addToHead(real_head);
+            }
+        } else {
+            DListNode* tmp = cache[key];
+            tmp->value = value;
+            addToHead(tmp);
+        }
+    }
+
+    void addToHead(DListNode* node) {
+        node->pre = head;
+        node->next = head->next;
+        head->next->pre = node;
+        head->next = node;
+        size++;
+    }
+    void remove(DListNode* node) {
+        node->pre->next = node->next;
+        node->next->pre = node->pre;
+        size--;
+    }
+    DListNode* removeTail() {
+        DListNode* tmp = tail->pre;
+        tmp->next->pre = tmp->pre;
+        tmp->pre->next = tmp->next;
+        return tmp;
+    }
+
+private:
+    // hash表可以实现O(1)的查找复杂度，链表可以实现O(1)的增删复杂度，太完美了啊！
+    unordered_map<int, DListNode*> cache;
+    DListNode* head; // 虚拟头节点
+    DListNode* tail; // 虚拟尾节点
+    int size;
+    int capacity;
+};
+
 ```
 
 
