@@ -103,18 +103,21 @@ public:
         return tmp->value;
     }
     void put(int key, int value) {
+        // 没有找到key，动态分配一个
         if (cache.count(key) == 0) {
-            if (size >= capacity) {
+            DListNode* tmp = new DListNode(key, value);
+            // 新的节点要加入到cache中
+            cache[key] = tmp;
+            addToHead(tmp);
+            if (size > capacity) {
                 DListNode* real_tail = removeTail(); // 直接删就行
-                DListNode* real_head = new DListNode(key, value);
-                addToHead(real_head);
-            } else {
-                DListNode* real_head = new DlistNode(key, value);
-                addToHead(real_head);
+                cache.erase(real_tail->key); // cache里也要删掉
+                delete real_tail;
             }
         } else {
             DListNode* tmp = cache[key];
             tmp->value = value;
+            remove(tmp);
             addToHead(tmp);
         }
     }
@@ -153,3 +156,20 @@ private:
 5.编译的过程
 
 6.情景题，
+
+
+
+
+
+
+小米软件开发实习生一面面经：
+1.webserver项目中，印象最深或者最难的是哪一块：
+
+2.说了定时器，和实现的过程，那么用队列可以实现吗，先进先出
+
+3.异步实现写入日志，怎么实现的？
+就是简单的生产者消费者模型
+
+4.最多同时支持多少个连接，webbench最高可以实现多少的并发
+
+5.你认为这个项目目前的瓶颈在哪里，有哪里可以改进的？
