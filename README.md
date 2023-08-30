@@ -4,6 +4,10 @@
 关于STL标准模板库的笔记知识点：
 STL共有六大部件：Containers（容器）、Iterators（迭代器）、Algorithms（算法）、Allocators（分配器）、Adapters（适配器）、Functors（仿函数）。
 
+容器deque：分段连续，连续是假象，分段是事实。当然还有start和finish，即begin和end
+由多段buffer(缓冲区)结构实现。每一个buffer的首地址指针存放在一个vector中，这个vector也是deque的控制中心。可以往buffer的两端进行扩充数据。如果已有的多段buffer装满了数据，那么增加buffer来扩充新的数据，同时将新的buffer的首地址的指针放入vector中。
+迭代器iterator知道控制中心在哪里。iterator包含cur、first、last、node四部分。cur指向当前元素，node指向控制中心vector，first和last指向某个buffer的头和尾，当iterator++到边界last时，为了保持连续，node指向下一个buffer，
+
 快手客户端开发面试经历：7.3下午投递简历，7.4中午约面试，7.5下午三点一面，五点半通知一面通过，7.6下午三点二面。
 
 快手一面面经：
